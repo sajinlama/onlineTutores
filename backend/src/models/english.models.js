@@ -37,6 +37,6 @@ const englishSchema = new mongoose.Schema({
  
 });
 
- const English= mongoose.model("Question", englishSchema);
+ const English= mongoose.model("English", englishSchema);
 
  export default English;

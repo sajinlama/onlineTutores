@@ -16,7 +16,6 @@ const loginSchema = Joi.object({
   }),
 });
 
-
 const userLogin = async (req, res) => {
   try {
     // Validate request data
@@ -26,49 +25,49 @@ const userLogin = async (req, res) => {
         error: error.details[0].message,
       });
     }
-
+    
     const { email, password } = req.body;
-    console.log(email ,password)
-
+    console.log(email, password);
+    
     // Check if user exists
     const user = await User.findOne({ email });
     if (!user) {
       console.log("user not found");
       return res.status(404).json({
         error: "User not found. Please sign up.",
-        
       });
     }
-
+    
     // Compare passwords
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log(user.password);
     if (!isPasswordValid) {
       console.log("password not found");
       return res.status(401).json({
         error: "Invalid email or password.",
       });
     }
-
+    
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
-
-  
-   
+    
     res.cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax", 
-        maxAge: 7 * 24 * 60 * 60 * 1000, 
-      });
-
-    // Send response
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    
+    // Send response with userId and username
     res.status(200).json({
       message: "Login successful",
-     
+      userId: user._id,
+      username: user.name,
+      email:user.email
     });
   } catch (error) {
     res.status(500).json({

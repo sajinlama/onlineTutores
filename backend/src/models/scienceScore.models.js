@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const scoreSchema = new mongoose.Schema({
+const scienceScoreSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -34,6 +34,6 @@ const scoreSchema = new mongoose.Schema({
   },
 });
 
-const Score = mongoose.model("Score", scoreSchema);
+const EnglishScore = mongoose.model("scienceScore", scienceScoreSchema);
 
-export default Score;
+export default EnglishScore;

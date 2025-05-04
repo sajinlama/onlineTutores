@@ -37,6 +37,6 @@ const mathsQuestionSchema = new mongoose.Schema({
 
 });
 
- const Maths= mongoose.model("Maths>", mathsQuestionSchema);
+ const Maths= mongoose.model("Maths", mathsQuestionSchema);
 
  export default Maths;

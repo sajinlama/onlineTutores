@@ -4,10 +4,15 @@ import Science from '../models/science.models.js';
 const schema = Joi.object({
   question: Joi.string().required().trim(),
   options: Joi.array().items(Joi.string().required()).length(4).required(),
-  rightAns: Joi.string().valid(Joi.ref('options')).required(), // Ensure the right answer is in options
+  rightAns: Joi.string().required(),
   chapterName: Joi.string().required().trim(),
-  level: Joi.string().valid('easy', 'medium', 'hard').required().trim(),
-  set: Joi.number().min(1).required(),
+  level: Joi.string().valid('Easy', 'Medium', 'Hard').required().trim(),
+ 
+}).custom((value, helpers) => {
+  if (!value.options.includes(value.rightAns)) {
+    return helpers.message('"rightAns" must be one of the options');
+  }
+  return value;
 });
 
 const addScienceQuestion = async (req, res) => {
@@ -21,15 +26,14 @@ const addScienceQuestion = async (req, res) => {
   }
 
   try {
-    const { question, options, rightAns, chapterName, level, set } = req.body;
+    const { question, options, rightAns, chapterName, level } = req.body;
 
     const newQuestion = new Science({
       question,
       options,
       rightAns,
       chapterName,
-      level,
-      set,
+      level
     });
 
     await newQuestion.save();

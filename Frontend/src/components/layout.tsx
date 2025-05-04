@@ -9,7 +9,7 @@ export default function Layout() {
         <AppSidebar />
         <div className="flex-1 p-4">
           <SidebarTrigger className="cursor-pointer"/>
-         <Outlet/>
+         <Outlet />
         </div>
       </div>
     </SidebarProvider>
