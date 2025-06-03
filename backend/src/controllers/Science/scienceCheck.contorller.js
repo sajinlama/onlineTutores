@@ -105,8 +105,9 @@ const checkAnsScience = async (req, res) => {
     // Generate AI feedback based on progress
     const feedbackData = await generateAIFeedback(progressArray, "science");
     
-    // Find or create a score document for this user
+  
     let userScore = await ScienceScore.findOne({ userId });
+     console.log("userScore",userScore);
     
     if (!userScore) {
       // Create new score document if none exists

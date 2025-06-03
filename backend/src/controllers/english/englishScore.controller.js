@@ -1,15 +1,14 @@
+import mongoose from "mongoose";
 import English from "../../models/english.models.js";
 import EnglishScore from "../../models/EglishScore.models.js";
 import UserProgress from "../../models/users/userProgress.models.js";
 import { generateAIFeedback } from "../../utils/aiFeedback.js";
-import mongoose from "mongoose"; 
+
 
 const checkAns = async (req, res) => {
     try {
       const { userId, chapterName, answers, level } = req.body;
-      console.log("this is ans from the frontend", answers);
-      console.log("User ID:", userId);
-      console.log("Chapter Name:", chapterName);
+     
       
       if (!Array.isArray(answers) || !chapterName || !userId) {
         return res.status(400).json({
@@ -30,24 +29,13 @@ const checkAns = async (req, res) => {
         }
       });
       
-      console.log("Converted question IDs:", questionIds);
       
       // Fetch correct answers for those questions from DB
       const questions = await English.find(
         { _id: { $in: questionIds } },
         '_id rightAns chapterName'
       );
-      
-      console.log(`Found ${questions.length} questions in database out of ${questionIds.length} requested`);
-      
-      // Debug: Check which IDs weren't found
-      if (questions.length < questionIds.length) {
-        const foundIds = questions.map(q => q._id.toString());
-        const missingIds = questionIds.filter(id => 
-          !foundIds.includes(id.toString ? id.toString() : id)
-        );
-        console.log("Missing question IDs:", missingIds);
-      }
+    
       
       // Create a map of questionId -> correct answer
       const questionMap = {};
@@ -61,6 +49,8 @@ const checkAns = async (req, res) => {
       let correctAnswers = 0;
       let wrongAnswers = 0;
       
+      console.log("this is from backend", questions);
+      console.log("this is from frontend", answers);
       // Group answers by chapter for better feedback and progress tracking
       const chapterResults = {};
       const incorrectChapters = new Set(); // Track chapters with incorrect answers
@@ -129,7 +119,7 @@ const checkAns = async (req, res) => {
       
       // Generate AI feedback based on progress
       // Explicitly pass only English progress data to avoid confusion with other subjects
-      const feedbackData = await generateAIFeedback(progressArray, "English");
+      const feedbackData = await generateAIFeedback(progressArray, "english");
       
       // Find or create a score document for this user
       let userScore = await EnglishScore.findOne({ userId });
@@ -182,40 +172,50 @@ const checkAns = async (req, res) => {
       // Save the updated score document
       await userScore.save();
       
-      // ===== SIMPLIFIED CODE TO UPDATE JUST ENGLISH TOTAL SCORE IN USER PROGRESS =====
+
       
       try {
-        // Find or create UserProgress document using findOneAndUpdate
-        // This is more efficient than separate find and save operations
-        await UserProgress.findOneAndUpdate(
-          { userId }, // find by userId
-          { 
-            // Reset english score to current correctAnswers count
-            $set: { "subjects.english.totalScore": correctAnswers },
-            
-            // if document doesn't exist, create it with these default values
-            $setOnInsert: { 
-              userId,
-              "subjects.maths.totalScore": 0,
-              "subjects.science.totalScore": 0,
-              "overallPerformance.averageScore": correctAnswers / 3, // initial average
-              "overallPerformance.strongestSubject": "english",
-              "overallPerformance.weakestSubject": "maths" // default
+        console.log("Attempting to update or create UserProgress for userId:", userId);
+        
+        // First try to find if user progress already exists
+        let userProgress = await UserProgress.findOne({ userId });
+      
+        if (!userProgress) {
+          console.log("No existing UserProgress found. Creating new document...");
+          
+          // Create new UserProgress document with explicit structure
+          userProgress = new UserProgress({
+            userId: userId,
+            subjects: {
+              maths: { totalScore: 0 },
+              science: { totalScore: 0 },
+              english: { totalScore: correctAnswers }
+            },
+            overallPerformance: {
+              averageScore: correctAnswers / 3,
+              strongestSubject: "english",
+              weakestSubject: "science"
             }
-          },
-          { 
-            new: true, // return updated document
-            upsert: true // create if doesn't exist
+          });
+          
+          try {
+            await userProgress.save();
+            console.log("Successfully created new UserProgress document");
+          } catch (saveError) {
+            console.error("Error saving new UserProgress:", saveError);
+            console.error("Error details:", JSON.stringify(saveError, null, 2));
+            throw saveError; // Re-throw to be caught by outer catch block
           }
-        );
-  
-        // Calculate and update the overall performance in a separate operation
-        const userProgress = await UserProgress.findOne({ userId });
-        if (userProgress) {
+        } else {
+          console.log("Existing UserProgress found. Updating...");
+          
+          // Update existing document - fix: update english score, not math score
+          userProgress.subjects.english.totalScore = correctAnswers;
+          
           // Calculate average score
-          const mathsScore = userProgress.subjects.maths?.totalScore || 0;
-          const scienceScore = userProgress.subjects.science?.totalScore || 0;
-          const englishScore = userProgress.subjects.english?.totalScore || 0;
+          const mathsScore = userProgress.subjects.maths.totalScore || 0;
+          const scienceScore = userProgress.subjects.science.totalScore || 0;
+          const englishScore = userProgress.subjects.english.totalScore || 0;
           
           userProgress.overallPerformance.averageScore = 
             (mathsScore + scienceScore + englishScore) / 3;
@@ -231,16 +231,23 @@ const checkAns = async (req, res) => {
           userProgress.overallPerformance.strongestSubject = subjects.reduce((a, b) => scores[a] > scores[b] ? a : b);
           userProgress.overallPerformance.weakestSubject = subjects.reduce((a, b) => scores[a] < scores[b] ? a : b);
           
-          await userProgress.save();
+          try {
+            await userProgress.save();
+            console.log("Successfully updated UserProgress document");
+          } catch (saveError) {
+            console.error("Error updating existing UserProgress:", saveError);
+            console.error("Error details:", JSON.stringify(saveError, null, 2));
+            throw saveError; // Re-throw to be caught by outer catch block
+          }
         }
       } catch (progressError) {
-        console.error("Error updating UserProgress:", progressError);
+        console.error("Error in UserProgress operations:", progressError);
+        console.error("Full error stack:", progressError.stack);
         // Continue execution - don't fail the main function if UserProgress update fails
       }
       
-      // Send result with subject clarification
+      // Send result
       res.status(200).json({
-        subject: "english", // Explicitly state the subject to avoid confusion
         correctAnswers,
         wrongAnswers,
         percentage,

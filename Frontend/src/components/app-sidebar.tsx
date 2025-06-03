@@ -13,18 +13,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import ThemeSwitcher from "./themswitcher"
+
 
 // Menu items
 const items = [
-  {
-    title: "Home",
-    url: "/home",
-    icon: Home,
-  },
+ 
   {
     title: "Dashboard",
-    url: "/home/dashboard",
+    url: "/home",
     icon: SquareDashedBottom,
   },
   {

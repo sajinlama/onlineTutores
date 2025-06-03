@@ -35,7 +35,7 @@ export default function Register() {
       
       if(response.status === 201) { // Changed from 200 to 201 since register typically returns 201 Created
         // Successful registration - redirect to home page
-        navigate("/home");
+        navigate("/home ");
       }
       
       // Clear form fields
@@ -127,7 +127,7 @@ export default function Register() {
           <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
             Have an account already?{" "}
             <Link
-              to="/"
+              to="/login"
               className="font-medium text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white cursor-pointer"
             >
               Login 

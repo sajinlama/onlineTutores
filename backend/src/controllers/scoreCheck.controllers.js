@@ -34,8 +34,8 @@ const checkAns = async (req, res) => {
     let correctAnswers = 0;
     let wrongAnswers = 0;
     
-   console.log("this is from backend",questions);
-   console.log("this is from frontend",answers);
+    console.log("this is from backend", questions);
+    console.log("this is from frontend", answers);
     const chapterResults = {};
     const incorrectChapters = new Set(); // Track chapters with incorrect answers
     
@@ -154,36 +154,45 @@ const checkAns = async (req, res) => {
     // Save the updated score document
     await userScore.save();
     
-    // ===== SIMPLIFIED CODE TO UPDATE JUST MATH TOTAL SCORE IN USER PROGRESS =====
     
     try {
-      // Find or create UserProgress document using findOneAndUpdate
-      // This is more efficient than separate find and save operations
-      await UserProgress.findOneAndUpdate(
-        { userId }, // find by userId
-        { 
-          // Reset math score to current correctAnswers count
-          $set: { "subjects.maths.totalScore": correctAnswers },
-          
-          // if document doesn't exist, create it with these default values
-          $setOnInsert: { 
-            userId,
-            "subjects.science.totalScore": 0,
-            "subjects.english.totalScore": 0,
-            "overallPerformance.averageScore": correctAnswers / 3, // initial average
-            "overallPerformance.strongestSubject": "maths",
-            "overallPerformance.weakestSubject": "science" // default
+      console.log("Attempting to update or create UserProgress for userId:", userId);
+      
+      // First try to find if user progress already exists
+      let userProgress = await UserProgress.findOne({ userId });
+      
+      if (!userProgress) {
+        console.log("No existing UserProgress found. Creating new document...");
+        
+        // Create new UserProgress document with explicit structure
+        userProgress = new UserProgress({
+          userId: userId,
+          subjects: {
+            maths: { totalScore: correctAnswers },
+            science: { totalScore: 0 },
+            english: { totalScore: 0 }
+          },
+          overallPerformance: {
+            averageScore: correctAnswers / 3,
+            strongestSubject: "maths",
+            weakestSubject: "science"
           }
-        },
-        { 
-          new: true, // return updated document
-          upsert: true // create if doesn't exist
+        });
+        
+        try {
+          await userProgress.save();
+          console.log("Successfully created new UserProgress document");
+        } catch (saveError) {
+          console.error("Error saving new UserProgress:", saveError);
+          console.error("Error details:", JSON.stringify(saveError, null, 2));
+          throw saveError; // Re-throw to be caught by outer catch block
         }
-      );
-
-      // Calculate and update the overall performance in a separate operation
-      const userProgress = await UserProgress.findOne({ userId });
-      if (userProgress) {
+      } else {
+        console.log("Existing UserProgress found. Updating...");
+        
+        // Update existing document
+        userProgress.subjects.maths.totalScore = correctAnswers;
+        
         // Calculate average score
         const mathsScore = userProgress.subjects.maths.totalScore || 0;
         const scienceScore = userProgress.subjects.science.totalScore || 0;
@@ -203,13 +212,20 @@ const checkAns = async (req, res) => {
         userProgress.overallPerformance.strongestSubject = subjects.reduce((a, b) => scores[a] > scores[b] ? a : b);
         userProgress.overallPerformance.weakestSubject = subjects.reduce((a, b) => scores[a] < scores[b] ? a : b);
         
-        await userProgress.save();
+        try {
+          await userProgress.save();
+          console.log("Successfully updated UserProgress document");
+        } catch (saveError) {
+          console.error("Error updating existing UserProgress:", saveError);
+          console.error("Error details:", JSON.stringify(saveError, null, 2));
+          throw saveError; // Re-throw to be caught by outer catch block
+        }
       }
     } catch (progressError) {
-      console.error("Error updating UserProgress:", progressError);
+      console.error("Error in UserProgress operations:", progressError);
+      console.error("Full error stack:", progressError.stack);
       // Continue execution - don't fail the main function if UserProgress update fails
     }
-    
     
     // Send result
     res.status(200).json({
