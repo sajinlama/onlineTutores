@@ -74,9 +74,9 @@ The goal of this project is to provide **personalized learning insights** and he
 ```bash
 git clone https://github.com/sajinlama/onlinetutor.git
 cd onlinetutor
+```
 
-
-# 🎓 Online Tutor App – AI Powered Learning Platform
+###🎓 Online Tutor App – AI Powered Learning Platform
 
 The **Online Tutor App** is a web-based learning platform where students can **log in, take subject-based tests, and receive AI-generated feedback** based on their performance.  
 The goal of this project is to provide **personalized learning insights** and help students understand their strengths and weaknesses.
