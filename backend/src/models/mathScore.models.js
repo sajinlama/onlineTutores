@@ -30,10 +30,10 @@ const mathScoreSchema = new mongoose.Schema({
   aiFeedback: {
     overallPerformance: String,
     chaptersToFocusOn: [String],
-    personalizedSuggestions: [String], // Now supports arrays
+    personalizedSuggestions: [String], 
   },
 });
 
-const MathScore = mongoose.model("Score", mathScoreSchema);
+const MathScore = mongoose.model("MathScore", mathScoreSchema);
 
 export default MathScore;

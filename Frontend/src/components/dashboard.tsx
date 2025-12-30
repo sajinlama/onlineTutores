@@ -32,9 +32,17 @@ console.log('email:', useremail);
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/getTotal');
+      const response = await fetch('http://localhost:5001/api/getTotal', {
+                        credentials: "include"
+                         });
+
         const data = await response.json();
-        setUserData(data[0]);
+        console.log(data)
+        console.log("data",data[0])
+        
+        
+        setUserData(data);
+        console.log("thisis data",userData);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);

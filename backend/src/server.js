@@ -29,7 +29,7 @@ const router = express.Router();
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173',  
+  origin: 'http://localhost:5174',  
   credentials: true                
 }));
 
@@ -59,6 +59,8 @@ app.get('/api/check-auth', authMiddleware, (req, res) => {
     user: req.user
   });
 });
+
+
 
 // Register all routes
 app.use("/api", router); 

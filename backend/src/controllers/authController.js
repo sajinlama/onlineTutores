@@ -5,7 +5,7 @@ const verifyAuth = (req, res) => {
   try {
     // Get token from cookies
     const token = req.cookies.token;
-    console.log("token",token);
+    console.log("this is verify token",token);
     
     // Check if token exigsts
     if (!token) {
