@@ -75,137 +75,54 @@ The goal of this project is to provide **personalized learning insights** and he
 git clone https://github.com/sajinlama/onlinetutor.git
 cd onlinetutor
 ```
-
-#🎓 Online Tutor App – AI Powered Learning Platform
-
-The **Online Tutor App** is a web-based learning platform where students can **log in, take subject-based tests, and receive AI-generated feedback** based on their performance.  
-The goal of this project is to provide **personalized learning insights** and help students understand their strengths and weaknesses.
-
----
-
-## 🚀 Features
-
-### 🔐 Student Authentication
-- Secure student login & registration
-- JWT-based authentication
-- Protected routes for authorized users only
-
-### 📝 Online Tests
-- Subject-based quizzes (Maths, Science, English, etc.)
-- Multiple-choice questions
-- Real-time score calculation
-
-### 🤖 AI-Powered Feedback
-- AI analyzes student performance after test completion
-- Personalized feedback for:
-  - Strengths
-  - Weak subjects
-  - Overall performance
-- Suggestions for improvement
-
-### 📊 Performance Tracking
-- Subject-wise scores
-- Overall average score
-- Strongest & weakest subjects
-- Progress stored per student
-
-### 🧑‍🎓 Student Dashboard
-- View test results
-- See AI-generated feedback
-- Track improvement over time
-
----
-
-## 🛠️ Technologies Used
-
-### Frontend
-- React.js
-- TypeScript
-- Tailwind CSS
-- Axios
-- React Router
-
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JWT Authentication
-
-### AI Integration
-- Google Gemini / OpenAI API (for feedback generation)
-
----
-
-## 🧑‍💻 Getting Started
-
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
-- MongoDB (local or cloud)
-
----
-
-### Installation
-
-#### 1️⃣ Clone the Repository
-```bash
-git clone https://github.com/your-username/online-tutor-app.git
-cd online-tutor-app
-```
 2️⃣ Install Backend Dependencies
+```
 cd backend
 npm install
+
+```
 
 3️⃣ Install Frontend Dependencies
+```
 cd frontend
 npm install
+```
 
-Environment Variables
 
-Create a .env file in the backend directory and add:
-
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-AI_API_KEY=your_ai_api_key
-
-Running the Application
+🏃 Running the Application
+```
 Start Backend Server
 cd backend
-npm start
+npm run dev
+```
 
 Start Frontend Server
+```
 cd frontend
-npm start
+npm run dev
+```
 
 Open in Browser
-http://localhost:3000
+```
+http://localhost:5173
+```
 
-📘 How It Works
+### 📘 How It Works
 
-Student registers or logs in
+- Student registers or logs in
+- Student selects a subject test
+- Answers multiple-choice questions
+- System calculates scores instantly
+- AI generates personalized feedback
+- Results are saved and shown on the dashboard
 
-Student selects a subject test
+---
 
-Answers multiple-choice questions
+### 🔮 Future Enhancements
 
-System calculates scores instantly
-
-AI generates personalized feedback
-
-Results are saved and shown on the dashboard
-
-🔮 Future Enhancements
-
-Teacher/Admin dashboard
-
-Timed exams
-
-Question difficulty levels
-
-Leaderboards
-
-PDF performance reports
-
-Video-based lessons
+- Teacher/Admin dashboard
+- Timed exams
+- Question difficulty levels
+- Leaderboards
+- PDF performance reports
+- Video-based lessons
