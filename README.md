@@ -152,4 +152,60 @@ The goal of this project is to provide **personalized learning insights** and he
 ```bash
 git clone https://github.com/your-username/online-tutor-app.git
 cd online-tutor-app
+```
+2️⃣ Install Backend Dependencies
+cd backend
+npm install
 
+3️⃣ Install Frontend Dependencies
+cd frontend
+npm install
+
+Environment Variables
+
+Create a .env file in the backend directory and add:
+
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+AI_API_KEY=your_ai_api_key
+
+Running the Application
+Start Backend Server
+cd backend
+npm start
+
+Start Frontend Server
+cd frontend
+npm start
+
+Open in Browser
+http://localhost:3000
+
+📘 How It Works
+
+Student registers or logs in
+
+Student selects a subject test
+
+Answers multiple-choice questions
+
+System calculates scores instantly
+
+AI generates personalized feedback
+
+Results are saved and shown on the dashboard
+
+🔮 Future Enhancements
+
+Teacher/Admin dashboard
+
+Timed exams
+
+Question difficulty levels
+
+Leaderboards
+
+PDF performance reports
+
+Video-based lessons
