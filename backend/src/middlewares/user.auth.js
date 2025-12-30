@@ -4,6 +4,7 @@ const authMiddleware = (req, res, next) => {
   try {
     // Get token from cookies
     const token = req.cookies.token;
+    console.log("this is middleware token",token)
     
     // Check if token exists
     if (!token) {

@@ -21,7 +21,6 @@ function Maths() {
       try {
         const res = await axios.get('http://localhost:5001/api/getmathQuestion');
         setQuestions(res.data);
-        console.log(res.data);
         setLoading(false);
         setTimerActive(true);
       } catch (error) {
@@ -34,7 +33,7 @@ function Maths() {
   }, []);
 
   useEffect(() => {
-    let timer;
+    let timer: any;
     if (timerActive && timerValue > 0) {
       timer = setInterval(() => {
         setTimerValue((prev) => prev - 1);
@@ -61,8 +60,8 @@ function Maths() {
     if (selectedOptionIndex === null) return;
 
     const selectedAnswer = questions[currentQuestion].options[selectedOptionIndex];
+    console.log("this is selected ans", selectedAnswer);
     const correctAnswer = questions[currentQuestion].correctOption;
-    console.log("this is the userans",selectedAnswer);
 
     const updatedAnswers = [
       ...userAnswers,
@@ -72,18 +71,18 @@ function Maths() {
         chapterName: questions[currentQuestion].chapterName,
       },
     ];
-
-    console.log("update ans",updatedAnswers);
     setUserAnswers(updatedAnswers);
+    console.log("this is userans", updatedAnswers);
 
     if (selectedAnswer === correctAnswer) {
       setScore((prev) => prev + 1);
     }
 
-    handleNextQuestion();
+    // Pass the updated answers to handleNextQuestion
+    handleNextQuestion(updatedAnswers);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = (answersToSubmit = null) => {
     setSelectedOptionIndex(null);
     setTimerValue(60);
 
@@ -92,11 +91,12 @@ function Maths() {
     } else {
       setTimerActive(false);
       setQuizComplete(true);
-      submitAllAnswers();
+      // Use the passed answers or fall back to userAnswers
+      submitAllAnswers(answersToSubmit || userAnswers);
     }
   };
 
-  const submitAllAnswers = async () => {
+  const submitAllAnswers = async (answersToSubmit) => {
     setSubmitting(true);
     try {
       const userId = localStorage.getItem('userId');
@@ -106,13 +106,12 @@ function Maths() {
       
       const chapterName = questions[0]?.chapterName || 'Unknown Chapter';
       const level = questions[0]?.level || 'Unknown Level';
-
-      console.log(userAnswers);
+      console.log("the user ans is ", answersToSubmit);
 
       const response = await axios.post('http://localhost:5001/api/updateScore', {
         userId,
         chapterName,
-        answers: userAnswers,
+        answers: answersToSubmit,
         level,
       });
 

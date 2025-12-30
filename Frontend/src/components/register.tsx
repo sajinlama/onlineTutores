@@ -28,6 +28,8 @@ export default function Register() {
       password: password
     };
 
+    
+console.log(registerData);
     try {
       const response = await axios.post(URI, registerData, {
         withCredentials: true // Important to include cookies in requests
@@ -35,7 +37,7 @@ export default function Register() {
       
       if(response.status === 201) { // Changed from 200 to 201 since register typically returns 201 Created
         // Successful registration - redirect to home page
-        navigate("/home ");
+        navigate("/ home");
       }
       
       // Clear form fields
@@ -44,6 +46,7 @@ export default function Register() {
       setpassword("");
     } catch (error: any) {
       console.error("Registration error:", error);
+      console.log(error);
       // Display error message to user
       setError(error.response?.data?.error || "Registration failed. Please try again.");
     } finally {
