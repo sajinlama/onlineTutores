@@ -57,7 +57,7 @@ export default function Login() {
   };
   
   return (
-   <div className="h-screen">
+   <div className="h-screen dark:bg-black">
     <nav className="flex justify-end p-5"><ThemeSwitcher /></nav>
     <div className="flex justify-center items-center">
    

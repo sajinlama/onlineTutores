@@ -55,7 +55,7 @@ console.log(registerData);
   };
 
   return (
-    <div className="h-screen">
+    <div className="h-screen dark:g-black">
       <nav className="flex justify-end p-5"><ThemeSwitcher /></nav>
       <div className="relative flex justify-center items-center">
         <div className="relative shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">

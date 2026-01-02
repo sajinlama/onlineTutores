@@ -105,6 +105,7 @@ const checkAns = async (req, res) => {
     
     // Find or create a score document for this user
     let userScore = await MathScore.findOne({ userId });
+    console.log(userScore);
     
     if (!userScore) {
       // Create new score document if none exists

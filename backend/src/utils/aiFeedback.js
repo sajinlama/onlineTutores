@@ -62,6 +62,7 @@ Rules:
 2. If no weak chapters, suggest improvement tasks based on the highest errors.
 3. Provide exactly 5 suggestions, numbered, tailored to this student’s performance trends.
 4. Do NOT include any text outside of the required JSON.
+5. Personalized Suggestions should be array of strings not just array.
 `;
 
     // ✅ Call the new SDK correctly
@@ -76,14 +77,37 @@ Rules:
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Could not parse AI response as JSON");
 
-    const parsedResponse = JSON.parse(jsonMatch[0]);
+  const parsedResponse = JSON.parse(jsonMatch[0]);
 
-    // Ensure weak chapters are mentioned
-    if (weakChapters.length > 0 && !parsedResponse.overallPerformance.toLowerCase().includes("weak")) {
-      parsedResponse.overallPerformance += ` You should focus on improving in ${weakChapters.join(", ")} as these are areas where you're facing difficulties.`;
-    }
+// Normalize personalizedSuggestions to array of strings
+if (typeof parsedResponse.personalizedSuggestions === "string") {
+  parsedResponse.personalizedSuggestions =
+    parsedResponse.personalizedSuggestions
+      .split("\n")
+      .map(s => s.replace(/^\d+\.\s*/, "").trim())
+      .filter(Boolean);
+}
 
-    return parsedResponse;
+// Ensure it's always an array
+if (!Array.isArray(parsedResponse.personalizedSuggestions)) {
+  parsedResponse.personalizedSuggestions = [];
+}
+
+// Force exactly 5 suggestions
+parsedResponse.personalizedSuggestions =
+  parsedResponse.personalizedSuggestions.slice(0, 5);
+
+// Ensure weak chapters are mentioned
+if (
+  weakChapters.length > 0 &&
+  !parsedResponse.overallPerformance?.toLowerCase().includes("weak")
+) {
+  parsedResponse.overallPerformance +=
+    ` You should focus on improving in ${weakChapters.join(", ")} as these are areas where you're facing difficulties.`;
+}
+
+return parsedResponse;
+
 
   } catch (error) {
     console.error("Error generating AI feedback:", error);
