@@ -30,7 +30,7 @@ const englishScoreSchema = new mongoose.Schema({
   aiFeedback: {
     overallPerformance: String,
     chaptersToFocusOn: [String],
-    personalizedSuggestions: String,
+    personalizedSuggestions: [String],
   },
 });
 

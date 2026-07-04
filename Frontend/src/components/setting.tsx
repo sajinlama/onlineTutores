@@ -1,40 +1,38 @@
-import { useState, useEffect } from "react";
-import { Save, Moon, Sun, LogOut } from "lucide-react";
-import { useTheme } from "@/contexapi/themeprovider";
-import axios from "axios";
+"use client";
 
-// Backend API endpoints - you'll implement these on your server
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { 
+  Save, Moon, Sun, LogOut, User, Lock, Paintbrush, 
+  ShieldAlert, AlertCircle, CheckCircle2 
+} from "lucide-react";
+import { useTheme } from "@/contexapi/themeprovider";
+
 const API_ENDPOINTS = {
   CHANGE_PASSWORD: "http://localhost:5001/api/users/change-password",
   UPDATE_PROFILE: "http://localhost:5001/api/users/update-profile",
 };
 
-function Setting() {
-  // User state
+export default function Setting() {
   const [user, setUser] = useState({
     name: "",
     email: "",
     userId: "",
   });
 
-  // Form states
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [newName, setNewName] = useState("");
   
-  // Alert states
   const [passwordAlert, setPasswordAlert] = useState({ show: false, message: "", type: "" });
   const [profileAlert, setProfileAlert] = useState({ show: false, message: "", type: "" });
   
-  // Loading states
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   
-  // Theme context using the hook
   const { theme, toggleTheme } = useTheme();
 
-  // Load user data
   useEffect(() => {
     const username = localStorage.getItem("name") || "User";
     const userEmail = localStorage.getItem("email") || "user@example.com";
@@ -44,15 +42,28 @@ function Setting() {
     setNewName(username);
   }, []);
 
-  // Handle password change
-  const handlePasswordChange = async (e) => {
+  // Alert cleanups automatically after a few seconds for better UX
+  useEffect(() => {
+    if (profileAlert.show) {
+      const t = setTimeout(() => setProfileAlert(p => ({ ...p, show: false })), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [profileAlert.show]);
+
+  useEffect(() => {
+    if (passwordAlert.show) {
+      const t = setTimeout(() => setPasswordAlert(p => ({ ...p, show: false })), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [passwordAlert.show]);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation
     if (newPassword !== confirmPassword) {
       setPasswordAlert({
         show: true,
-        message: "New passwords don't match",
+        message: "New passwords don't match match verification setup.",
         type: "error",
       });
       return;
@@ -61,282 +72,296 @@ function Setting() {
     if (newPassword.length < 8) {
       setPasswordAlert({
         show: true,
-        message: "Password must be at least 8 characters",
+        message: "Password safety threshold requires at least 8 characters.",
         type: "error",
       });
       return;
     }
     
     setIsUpdatingPassword(true);
-    
     try {
-      const response = await axios.post(
+      await axios.post(
         API_ENDPOINTS.CHANGE_PASSWORD, 
+        { userId: user.userId, currentPassword, newPassword },
         {
-          userId: user.userId,
-          currentPassword,
-          newPassword,
-        },
-        {
-          withCredentials: true, // Include cookies
-          headers: {
-            "Content-Type": "application/json",
-          }
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
         }
       );
       
       setPasswordAlert({
         show: true,
-        message: "Password updated successfully",
+        message: "Security credentials updated successfully.",
         type: "success",
       });
       
-      // Clear form
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (error) {
-      // Handle axios error responses
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          "Failed to update password";
-      
-      setPasswordAlert({
-        show: true,
-        message: errorMessage,
-        type: "error",
-      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Failed to update security framework.";
+      setPasswordAlert({ show: true, message: errorMessage, type: "error" });
     } finally {
       setIsUpdatingPassword(false);
     }
   };
 
-  // Handle profile update
-  const handleProfileUpdate = async (e) => {
+  const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     setIsUpdatingProfile(true);
     
     try {
-      const response = await axios.put(
+      await axios.put(
         API_ENDPOINTS.UPDATE_PROFILE,
+        { userId: user.userId, name: newName },
         {
-          userId: user.userId,
-          name: newName,
-        },
-        {
-          withCredentials: true, // Include cookies
-          headers: {
-            "Content-Type": "application/json",
-          }
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
         }
       );
       
-      // Update local storage
       localStorage.setItem("name", newName);
-      
-      // Update user state
       setUser(prev => ({ ...prev, name: newName }));
       
       setProfileAlert({
         show: true,
-        message: "Profile updated successfully",
+        message: "Profile workspace updated successfully.",
         type: "success",
       });
-    } catch (error) {
-      // Handle axios error responses
-      const errorMessage = error.response?.data?.message || 
-                          error.message || 
-                          "Failed to update profile";
-      
-      setProfileAlert({
-        show: true,
-        message: errorMessage,
-        type: "error",
-      });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Profile synchronization failure.";
+      setProfileAlert({ show: true, message: errorMessage, type: "error" });
     } finally {
       setIsUpdatingProfile(false);
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
-    // Clear localStorage
     localStorage.removeItem("name");
     localStorage.removeItem("email");
     localStorage.removeItem("userId");
-    
-    // Clear cookies
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    
-    // Redirect to login
     window.location.href = "/login";
   };
 
   return (
-    <div className="p-6 w-full lg:w-[70vw] h-full bg-white dark:bg-zinc-900">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-black dark:text-white">Settings</h1>
+    <div className="min-h-screen w-full bg-[#fafafa] dark:bg-[#030303] text-zinc-900 dark:text-zinc-100 font-sans antialiased relative p-6 md:p-10 transition-colors duration-300">
+      <div className="w-full max-w-7xl mx-auto space-y-6 relative z-10">
         
-        {/* Profile Section */}
-        <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-black dark:text-white">Profile Information</h2>
-          
-          {profileAlert.show && (
-            <div className={`mb-4 p-3 rounded ${
-              profileAlert.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-            }`}>
-              {profileAlert.message}
+        {/* Module Header Bar Layout */}
+        <div className="w-full bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl font-bold tracking-tight">System Settings</h1>
             </div>
-          )}
-          
-          <form onSubmit={handleProfileUpdate} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={user.email}
-                disabled
-                className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-zinc-700 text-gray-500 dark:text-gray-400"
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Email cannot be changed
-              </p>
-            </div>
-            
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Display Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-white"
-              />
-            </div>
-            
-            <button 
-              type="submit"
-              disabled={isUpdatingProfile}
-              className="flex items-center px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition disabled:opacity-50"
-            >
-              <Save size={16} className="mr-2" />
-              {isUpdatingProfile ? "Saving..." : "Save Changes"}
-            </button>
-          </form>
-        </div>
-        
-        {/* Password Section */}
-        <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-black dark:text-white">Change Password</h2>
-          
-          {passwordAlert.show && (
-            <div className={`mb-4 p-3 rounded ${
-              passwordAlert.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-            }`}>
-              {passwordAlert.message}
-            </div>
-          )}
-          
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div>
-              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Current Password
-              </label>
-              <input
-                type="password"
-                id="currentPassword"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-white"
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                New Password
-              </label>
-              <input
-                type="password"
-                id="newPassword"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-white"
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-zinc-800 text-black dark:text-white"
-                required
-              />
-            </div>
-            
-            <button 
-              type="submit"
-              disabled={isUpdatingPassword}
-              className="flex items-center px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition disabled:opacity-50"
-            >
-              <Save size={16} className="mr-2" />
-              {isUpdatingPassword ? "Updating..." : "Update Password"}
-            </button>
-          </form>
-        </div>
-        
-        {/* Appearance Section */}
-        <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-black dark:text-white">Appearance</h2>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-300">Theme</span>
-            <button
-              onClick={toggleTheme}
-              className="flex items-center px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition"
-            >
-              {theme === "dark" ? (
-                <>
-                  <Sun size={16} className="mr-2" />
-                  Light Mode
-                </>
-              ) : (
-                <>
-                  <Moon size={16} className="mr-2" />
-                  Dark Mode
-                </>
-              )}
-            </button>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">Manage your profile, security settings, and environment workspace options</p>
           </div>
         </div>
-        
-        {/* Logout Section */}
-        <div className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4 text-black dark:text-white">Session</h2>
+
+        {/* Master Workspace Split Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          <button
-            onClick={handleLogout}
-            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-          >
-            <LogOut size={16} className="mr-2" />
-            Logout
-          </button>
+          {/* Left Column: Forms and Configuration Module Controls */}
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* Profile Configuration Section */}
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+              <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-900/60 pb-4">
+                <div className="w-8 h-8 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black rounded-lg flex items-center justify-center shadow-sm">
+                  <User size={16} />
+                </div>
+                <h2 className="text-md font-bold tracking-tight">Profile Information</h2>
+              </div>
+
+              {profileAlert.show && (
+                <div className={`p-4 border rounded-xl flex items-start gap-3 text-xs font-medium transition-all duration-300 ${
+                  profileAlert.type === "success" 
+                    ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                    : "bg-red-500/5 border-red-500/10 text-red-600 dark:text-red-400"
+                }`}>
+                  {profileAlert.type === "success" ? <CheckCircle2 size={16} className="flex-shrink-0" /> : <AlertCircle size={16} className="flex-shrink-0" />}
+                  <span>{profileAlert.message}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleProfileUpdate} className="space-y-5">
+                <div className="space-y-2">
+                  <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={user.email}
+                    disabled
+                    className="w-full p-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-100 dark:bg-zinc-900/60 text-zinc-400 dark:text-zinc-500 text-sm select-none outline-none cursor-not-allowed"
+                  />
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500 pl-1">Primary authentication registry routing token cannot be modified.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="name" className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                    Display Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="w-full p-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-sm focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors outline-none"
+                    placeholder="Enter system profile handle"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isUpdatingProfile}
+                    className="h-11 px-6 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-20 flex items-center gap-2 group hover:opacity-90 cursor-pointer"
+                  >
+                    <Save size={15} />
+                    <span>{isUpdatingProfile ? "Saving Profile..." : "Save Profile Changes"}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Password Configuration Section */}
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+              <div className="flex items-center gap-3 border-b border-zinc-100 dark:border-zinc-900/60 pb-4">
+                <div className="w-8 h-8 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black rounded-lg flex items-center justify-center shadow-sm">
+                  <Lock size={16} />
+                </div>
+                <h2 className="text-md font-bold tracking-tight">Security Credentials</h2>
+              </div>
+
+              {passwordAlert.show && (
+                <div className={`p-4 border rounded-xl flex items-start gap-3 text-xs font-medium transition-all duration-300 ${
+                  passwordAlert.type === "success" 
+                    ? "bg-emerald-500/5 border-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                    : "bg-red-500/5 border-red-500/10 text-red-600 dark:text-red-400"
+                }`}>
+                  {passwordAlert.type === "success" ? <CheckCircle2 size={16} className="flex-shrink-0" /> : <AlertCircle size={16} className="flex-shrink-0" />}
+                  <span>{passwordAlert.message}</span>
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="currentPassword" className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full p-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-sm focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors outline-none"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="newPassword" className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                      New Security Key
+                    </label>
+                    <input
+                      type="password"
+                      id="newPassword"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full p-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-sm focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors outline-none"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="confirmPassword" className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                      Verify New Security Key
+                    </label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full p-3 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-sm focus:border-zinc-400 dark:focus:border-zinc-600 transition-colors outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isUpdatingPassword}
+                    className="h-11 px-6 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-semibold text-sm rounded-xl shadow-md transition-all active:scale-[0.98] disabled:opacity-20 flex items-center gap-2 group hover:opacity-90 cursor-pointer"
+                  >
+                    <Save size={15} />
+                    <span>{isUpdatingPassword ? "Updating Token..." : "Update Security Matrix"}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+
+          {/* Right Column: Layout Actions, Side Panels and Token Disconnects */}
+          <div className="lg:col-span-5 space-y-6">
+            
+            {/* Visual Customization Workspace Block */}
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-zinc-100 dark:border-zinc-900/60 pb-3">
+                <Paintbrush size={16} className="text-zinc-400" />
+                <span className="text-xs uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500">Appearance Theme Engine</span>
+              </div>
+              
+              <div className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200/60 dark:border-zinc-800/80 p-4 rounded-xl">
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Environment Theme</span>
+                <button
+                  onClick={toggleTheme}
+                  className="h-9 px-4 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-semibold text-xs rounded-xl shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  {theme === "dark" ? (
+                    <>
+                      <Sun size={14} />
+                      <span>Light Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon size={14} />
+                      <span>Dark Mode</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Session Management Area */}
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-zinc-100 dark:border-zinc-900/60 pb-3">
+                <ShieldAlert size={16} className="text-red-500/80" />
+                <span className="text-xs uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500">Session Workspace Terminus</span>
+              </div>
+              
+              <p className="text-xs text-zinc-400 dark:text-zinc-500 leading-relaxed px-1">
+                Terminating your environment clears browser tokens and state registers. You will need to re-authenticate to gain access again.
+              </p>
+
+              <button
+                onClick={handleLogout}
+                className="h-11 w-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20 font-semibold rounded-xl text-sm shadow-sm active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <LogOut size={14} />
+                <span>Disconnect Active Session</span>
+              </button>
+            </div>
+
+          </div>
+
         </div>
+
       </div>
     </div>
   );
 }
-
-export default Setting;

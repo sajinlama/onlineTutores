@@ -66,7 +66,7 @@ Rules:
 
     // ✅ Call the new SDK correctly
     const result = await genAI.models.generateContent({
-      model: "gemma-3-27b-it", // or "gemini-2.5-flash"
+      model: "gemini-2.5-flash", 
       contents: prompt
     });
 
