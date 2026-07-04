@@ -3,10 +3,9 @@ import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, BookOpen, ArrowRight, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import ThemeSwitcher from "./themswitcher";
 
 const URL = "http://localhost:5001/api/login";
 
@@ -18,38 +17,29 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
     
-    const loginData = {
-      email,
-      password
-    };
+    const loginData = { email, password };
 
     try {
       const response = await axios.post(URL, loginData, {
-        withCredentials: true // Important to include cookies in requests
+        withCredentials: true 
       });
       
-      if(response.status === 200) {
-        
-      localStorage.setItem('userId', response.data.userId);
-      localStorage.setItem('name', response.data.username);
-      localStorage.setItem('email', response.data.email);
-      console.log("name",response.data.username);
-
-        // Successful login - redirect to home page
+      if (response.status === 200) {
+        localStorage.setItem('userId', response.data.userId);
+        localStorage.setItem('name', response.data.username);
+        localStorage.setItem('email', response.data.email);
         navigate("/home");
       }
       
-      // Clear form fields
       setemail("");
       setpassword("");
     } catch (error: any) {
       console.error("Login error:", error);
-      // Display error message to user
       setError(error.response?.data?.error || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
@@ -57,88 +47,113 @@ export default function Login() {
   };
   
   return (
-   <div className="h-screen dark:bg-black">
-    <nav className="flex justify-end p-5"><ThemeSwitcher /></nav>
-    <div className="flex justify-center items-center">
-   
-      <div className="shadow-input mx-auto w-full max-w-md rounded-none bg-white p-4 md:rounded-2xl md:p-8 dark:bg-black">
-        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
-          Welcome to EduMentor
-        </h2>
-        <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
-          Access personalized lessons with expert tutors
-        </p>
+    <div className="min-h-screen w-full bg-[#fafafa] dark:bg-[#030303] flex items-center justify-center p-4 relative overflow-hidden font-sans antialiased text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+      
+      {/* Background Micro Decorative Glows */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-purple-500/5 dark:bg-purple-900/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] bg-blue-500/5 dark:bg-blue-900/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative w-full max-w-md bg-white/60 dark:bg-zinc-950/40 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-6 md:p-8 shadow-xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300 group">
+        
+        {/* Header Icon Block */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="w-11 h-11 bg-zinc-900 dark:bg-zinc-100 rounded-xl flex items-center justify-center shadow-sm mb-4">
+            <BookOpen className="h-5 w-5 text-white dark:text-black" />
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            Welcome back
+          </h2>
+          <p className="mt-1.5 text-sm text-zinc-500 dark:text-zinc-400 max-w-xs">
+            Access personalized lessons with expert tutors
+          </p>
+        </div>
 
         {error && (
-          <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded dark:bg-red-900/30 dark:text-red-300">
+          <div className="mb-6 p-3.5 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm rounded-xl font-medium animate-in fade-in slide-in-from-top-2 duration-200">
             {error}
           </div>
         )}
 
-        <form className="my-8" onSubmit={handleSubmit}>
-          <LabelInputContainer className="mb-4">
-            <Label htmlFor="email">Email Address</Label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <LabelInputContainer>
+            <Label htmlFor="email" className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Email Address</Label>
             <Input 
               id="email" 
               placeholder="shivajipatil@gmail.com" 
               type="email" 
               onChange={(e) => setemail(e.target.value)}
               value={email}
+              disabled={isLoading}
+              className="h-11 rounded-xl bg-white/80 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-700 placeholder-zinc-400 dark:placeholder-zinc-600"
               required
             />
           </LabelInputContainer>
-          <LabelInputContainer className="mb-4">
-            <Label htmlFor="password">Password</Label>
+
+          <LabelInputContainer>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="password" className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Password</Label>
+            </div>
             <div className="relative">
               <Input 
                 id="password" 
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"} 
                 autoComplete="current-password"
-
                 onChange={(e) => setpassword(e.target.value)}
                 value={password}
+                disabled={isLoading}
+                className="h-11 rounded-xl bg-white/80 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-700 pr-10 placeholder-zinc-400 dark:placeholder-zinc-600"
                 required
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200 transition-colors cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </LabelInputContainer>
 
           <button
-            className="group/btn relative block h-10 w-full cursor-pointer rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
             type="submit"
             disabled={isLoading}
+            className="group/btn relative h-11 w-full cursor-pointer rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-semibold text-sm shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none overflow-hidden flex items-center justify-center gap-2 hover:bg-zinc-800 dark:hover:bg-zinc-200"
           >
-            {isLoading ? "Logging in..." : "Login →"}
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Logging in...</span>
+              </>
+            ) : (
+              <>
+                <span>Sign In</span>
+                <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-0.5 transition-transform" />
+              </>
+            )}
             <BottomGradient />
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+
+        <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="font-medium text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white cursor-pointer"
+            className="font-semibold text-zinc-800 dark:text-zinc-200 hover:underline underline-offset-4 cursor-pointer"
           >
             Register now
           </Link>
         </p>
       </div>
     </div>
-   </div>
   );
 }
 
 const BottomGradient = () => {
   return (
     <>
-      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
     </>
   );
 };
