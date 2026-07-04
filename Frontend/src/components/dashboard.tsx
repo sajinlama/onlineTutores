@@ -142,7 +142,7 @@ function Dashboard() {
                         className="fill-white dark:fill-zinc-100 font-semibold"
                         stroke="none"
                         fontSize={11}
-                       formatter={(value: string) => chartConfig[value]?.label?.substring(0, 5) || value}
+                   formatter={(value:any) => String(chartConfig[value as string]?.label ?? value).substring(0, 5)}
                       />
                     </Pie>
                   </PieChart>

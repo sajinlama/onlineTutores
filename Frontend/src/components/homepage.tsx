@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  BookOpen, Users, Award, ChevronRight, Menu, X, Star, 
+  BookOpen, ChevronRight, Menu, X, Star, 
   ArrowUpRight, Sparkles, Sun, Moon 
 } from 'lucide-react';
 
